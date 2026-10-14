@@ -85,6 +85,30 @@
       "expected": "Measure whether the reader selects direct captured-source search or a focused evidence lookup for the narrow question. Do not assume a broad proof response is cheaper, or force graph use when a named-source lookup answers it.",
       "where": "Guidance selection and recall tool ergonomics.",
       "observed": "The new-history comparison included fast direct-source reads in both arms and broader graph reads for the same narrow questions. Larger responses sometimes fetched more bytes without saving a turn."
+    },
+    {
+      "id": "final-answer-command-protocol",
+      "question": "What should a read-only evaluation harness do when an action contains both done=true and a shell command?",
+      "fixture_recipe": "After one successful source read, return a supported answer with done=true and a redundant command. Keep the reader prompt ambiguous about this combination except on its last turn.",
+      "expected": "Execute no rejected command. Retain the response and exact costs as a protocol failure, grade the answer separately, and never silently retry or replace the reader. State the action contract explicitly in future prompts. Missing elapsed time stays unavailable, not zero.",
+      "where": "Evaluation prompt contract, action validation, failure retention and cost aggregation.",
+      "observed": "One document reader returned this combination. The harness stopped before the command; independent review identified prompt ambiguity. A versioned recovery retained the cell with no retry, exact token/model costs and unknown full wall time."
+    },
+    {
+      "id": "lexical-miss-anchor-recovery",
+      "question": "If a phrase search finds no evidence for a function, can its nearby record IDs recover the relevant receipt?",
+      "fixture_recipe": "Describe repeated work in a receipt without using the exact phrase duplicate delivery. Put relevant record IDs near the function. Let document readers search alternate wording.",
+      "expected": "Treat grep exit 1 as an observed no-match for that query, not a tool crash or evidence of global absence. Recover through relevant anchors or broader wording; retain the unsuccessful query cost.",
+      "where": "Reader search strategy and evaluation receipt classification.",
+      "observed": "Two readers got empty regex results and then answered correctly using captured graph context. No final factual omission occurred."
+    },
+    {
+      "id": "section-entry-citation-precision",
+      "question": "Does a citation to the heading immediately above a receipt, or the first line of a short function, identify the supporting evidence?",
+      "fixture_recipe": "Put the receipt text one line after a section heading and an executor call two lines after a function definition. Include equivalent heading citations in every compared arm.",
+      "expected": "Distinguish a nearby source-location precision warning from a wrong or unsupported source. Apply one policy across arms; confirm the supporting lines were actually delivered. Preserve raw grader alerts separately from adjudication.",
+      "where": "Anonymous grader citation policy and source-delivery audit.",
+      "observed": "Two document answers received precision alerts while equivalent heading citations in graph answers did not. Independent review confirmed the supporting text was delivered; this is not evidence of a graph quality advantage."
     }
   ]
 }
