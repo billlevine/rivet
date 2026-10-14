@@ -81,6 +81,14 @@ def main():
         check('captured_source_lookup', evidence['status'] == 'captured' and
               evidence['excerpt'] == ''.join(source_lines[evidence['start_line']-1:evidence['end_line']]),
               'source ID resolves to exact captured bytes without opening a citation path', ms)
+        found, ms = invoke('rivet.py', '--store', arm, 'find-evidence', 'memory pressure', '--format', 'json')
+        matches = found.get('matches', [])
+        expected_excerpt = (EXAMPLE / 'sources' / 'notes.md').read_text().splitlines(keepends=True)[3]
+        check('named_captured_evidence', found.get('total_matches') == 1 and
+              found.get('captured_text_fully_searchable') and len(matches) == 1 and
+              matches[0]['excerpt'] == expected_excerpt and
+              ids['cache-overturn'] in {r['id'] for r in matches[0]['record_refs']},
+              'literal receipt search returns exact captured span and its owning record', ms)
     report = {'suite': 'synthetic engineering regression', 'scope': 'invented examples only',
               'passed': sum(c['pass'] for c in cases), 'total': len(cases), 'cases': cases}
     if args.json:

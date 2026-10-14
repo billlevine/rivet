@@ -180,6 +180,55 @@ def evidence(store, ident, budget=6000, fmt='text'):
         text = encode(result)+'\n'
     return result, text
 
+def find_evidence(store, query, budget=6000, offset=0, count=20, fmt='text', store_path='STORE'):
+    """Literal search of captured spans; ownership enables a separate context check."""
+    if not query.strip(): raise ValueError('query must not be blank')
+    if budget < 300: raise ValueError('budget must be at least 300 bytes')
+    if count < 1 or offset < 0: raise ValueError('invalid page')
+    index = source_index(store)
+    matches = sorted((sid for sid, span in index.items()
+                      if isinstance(span.get('excerpt'), str) and query in span['excerpt']),
+                     key=lambda sid: (index[sid]['path'], index[sid]['start_line'], index[sid]['end_line'], sid))
+    if offset and offset >= len(matches): raise ValueError('invalid page')
+    unavailable = sum(not isinstance(span.get('excerpt'), str) for span in index.values())
+    def packet(n):
+        items = []
+        for sid in matches[offset:offset+n]:
+            owners = [{'id': r['id'], 'state': r['state']} for r in store['records']
+                      if any(source_id(s) == sid for s in r.get('sources', []))]
+            links = [{k: e[k] for k in ('from','relation','to')} for e in store['edges']
+                     if any(source_id(s) == sid for s in e.get('sources', []))]
+            roots = sorted({r['id'] for r in owners} or {e[k] for e in links for k in ('from','to')})
+            items.append({'id': sid, **index[sid], 'record_refs': owners, 'relationship_refs': links,
+                          'context': context_command(store_path, roots, 0, 20, False) if roots else None})
+        end = offset + len(items)
+        return {'schema': 'rivet-evidence-search.v1', 'query': query, 'match': 'case-sensitive literal substring',
+                'scope': 'captured excerpts only; no live source files read', 'matches': items,
+                'total_matches': len(matches), 'unavailable_spans': unavailable,
+                'captured_text_fully_searchable': unavailable == 0,
+                'page': {'offset': offset, 'next_offset': end if end < len(matches) else None},
+                'follow_up': ('python3 rivet.py --store '+shlex.quote(store_path)+' find-evidence '+shlex.quote(query)+
+                              f' --offset {end} --count {count} --budget {budget} --format {fmt}') if end < len(matches) else None,
+                'note': 'A text match is historical evidence, not a current-policy verdict. Check linked context for corrections. No match does not establish absence outside this capture.'}
+    def render_search(data):
+        if fmt == 'json': return encode(data)+'\n'
+        lines = [f"CAPTURED EVIDENCE SEARCH {query!r}: {data['total_matches']} matches; {unavailable} unavailable spans", data['scope']]
+        for item in data['matches']:
+            lines += [f"\n{item['id']} {item['path']}:{item['start_line']}-{item['end_line']} sha256={item.get('sha256','unavailable')}",
+                      'RECORDS '+encode(item['record_refs']), 'RELATIONSHIPS '+encode(item['relationship_refs']),
+                      item['excerpt']]
+            if item['context']: lines.append('CONTEXT: '+item['context'])
+        lines += ['PAGE '+encode(data['page']), data['note']]
+        if data['follow_up']: lines.append('NEXT: '+data['follow_up'])
+        return '\n'.join(lines)+'\n'
+    for n in range(min(count, len(matches)-offset), -1, -1):
+        if n == 0 and matches: break  # Never emit an empty page instead of a whole match.
+        result = packet(n); text = render_search(result)
+        if len(text.encode()) <= budget: return result, text
+    result = {'error': 'evidence_search_item_exceeds_budget', 'offset': offset,
+              'required_bytes': len(text.encode()), 'budget': budget}
+    return result, encode(result)+'\n'
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--store', type=Path, required=True)
@@ -191,7 +240,11 @@ def main():
     ctx.add_argument('--count', type=int, default=20)
     ev = sub.add_parser('evidence', help='fetch captured bytes by source ID; never opens a live citation path')
     ev.add_argument('source_id')
-    for child in (ctx, ev):
+    find = sub.add_parser('find-evidence', help='find case-sensitive literal text in captured excerpts')
+    find.add_argument('query')
+    find.add_argument('--offset', type=int, default=0)
+    find.add_argument('--count', type=int, default=20)
+    for child in (ctx, ev, find):
         child.add_argument('--budget', type=int, default=6000)
         child.add_argument('--format', choices=('text','json'), default='text')
     args = p.parse_args()
@@ -202,8 +255,10 @@ def main():
         if args.command == 'context':
             seeds = list(dict.fromkeys(args.entries))
             result,text = bounded(store,seeds,args.budget,args.offset,args.count,args.format,args.sources,str(args.store))
-        else:
+        elif args.command == 'evidence':
             result,text = evidence(store,args.source_id,args.budget,args.format)
+        else:
+            result,text = find_evidence(store,args.query,args.budget,args.offset,args.count,args.format,str(args.store))
     except (ValueError,KeyError,OSError) as exc:
         p.error(str(exc))
     print(text,end='')

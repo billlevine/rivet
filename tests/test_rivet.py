@@ -117,5 +117,53 @@ class RivetTests(unittest.TestCase):
         result,text=rivet.evidence(store,next(iter(rivet.source_index(store))),300)
         self.assertEqual('evidence_exceeds_budget',result['error']);self.assertLessEqual(len(text.encode()),300)
 
+    def test_find_evidence_deduplicates_spans_and_exposes_ownership(self):
+        store=fixture();store['records'][0]['state']='superseded'
+        result,text=rivet.find_evidence(store,'Original observed')
+        self.assertEqual(1,result['total_matches'])
+        self.assertEqual(4,len(result['matches'][0]['record_refs']))
+        self.assertIn({'id':'old','state':'superseded'},result['matches'][0]['record_refs'])
+        self.assertEqual('Original observed evidence.',result['matches'][0]['excerpt'])
+        self.assertIn('not a current-policy verdict',text)
+        self.assertIn('context',result['matches'][0]['context'])
+        self.assertEqual(0,rivet.find_evidence(store,'original observed')[0]['total_matches'])
+
+    def test_find_evidence_reports_unavailable_capture_and_blank_query(self):
+        store=fixture()
+        for record in store['records']:record['sources'][0].pop('excerpt')
+        result,text=rivet.find_evidence(store,'unobserved receipt')
+        self.assertEqual(0,result['total_matches'])
+        self.assertEqual(1,result['unavailable_spans'])
+        self.assertFalse(result['captured_text_fully_searchable'])
+        self.assertIn('No match does not establish absence',text)
+        with self.assertRaisesRegex(ValueError,'blank'):rivet.find_evidence(store,'  ')
+
+    def test_find_evidence_cli_pages_whole_matches_and_quotes_query(self):
+        store=fixture();query="Receipt O'Reilly; literal"
+        for number,record in enumerate(store['records'],1):
+            record['sources'][0].update(start_line=number,end_line=number,
+                                        excerpt=query+' '+record['id'])
+        with tempfile.TemporaryDirectory(prefix='rivet-find-') as tmp:
+            path=Path(tmp)/'store.json';path.write_text(json.dumps(store))
+            command=[sys.executable,str(Path(rivet.__file__)),'--store',str(path),
+                     'find-evidence',query,'--count','2','--format','json','--budget','6000']
+            matches=[];pages=0
+            while command:
+                raw=subprocess.check_output(command,text=True)
+                self.assertLessEqual(len(raw.encode()),6000)
+                packet=json.loads(raw);matches+=packet['matches'];pages+=1
+                self.assertLessEqual(pages,4)
+                if packet['follow_up']:
+                    command=shlex.split(packet['follow_up'])
+                    self.assertIn(query,command)
+                    command[:2]=[sys.executable,str(Path(rivet.__file__))]
+                else:command=None
+            self.assertEqual(4,len(matches));self.assertEqual(4,len({m['id'] for m in matches}))
+            self.assertEqual(2,pages)
+        result,text=rivet.find_evidence(store,query,budget=300)
+        self.assertIn('error',result)
+        self.assertNotIn('matches',result)
+        self.assertLessEqual(len(text.encode()),300)
+
 
 if __name__=='__main__':unittest.main()

@@ -89,6 +89,25 @@ not a target; relevant roots and completeness notices still matter. This guidanc
 one reasoning turn in a small synthetic comparison whose full proof view narrowly
 exceeded 6000 bytes. It is not evidence that a larger budget wins for every graph size.
 
+## Find a named receipt
+
+```sh
+python3 rivet.py --store /tmp/dg-example find-evidence 'memory pressure'
+python3 rivet.py --store /tmp/dg-example find-evidence 'memory pressure' --format json
+```
+
+`find-evidence` searches captured excerpts for a case-sensitive literal substring.
+It returns whole matching spans, source IDs, linked record IDs and states, and a command
+for their context. Shared spans appear once. No live citation path is opened. The byte
+budget defaults to 6000; follow NEXT for remaining matches. If one complete match cannot
+fit, the error reports its required bytes.
+
+This is a focused starting point for a known receipt name or exact phrase. A text match
+can be historical: inspect linked context when current status or corrections matter.
+Later corrections may not repeat the original phrase. No match only describes searchable
+captured excerpts; unavailable spans are counted explicitly. It does not establish that
+a decision or source is absent from the project.
+
 ## Category recall
 
 `recall.py` reads the same built store. Use `--query TEXT` for lexical roots or repeat `--seed ID` for exact roots. Profiles are `all` (default), `review`, `reasoning`, and `modification`:
