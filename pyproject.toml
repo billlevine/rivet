@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rivet-context-prototype"
+version = "0.1.0"
+description = "Rivet: recorded intent, verification, evidence and traceability"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+rivet = "rivet:main"
+rivet-build = "build:main"
+rivet-read = "dg:main"
+rivet-write = "dg_write:main"
+rivet-recall = "recall:main"
+dg-build = "build:main"
+dg-read = "dg:main"
+dg-write = "dg_write:main"
+dg-recall = "recall:main"
+
+[tool.setuptools]
+py-modules = ["build", "dg", "dg_write", "recall", "rivet"]

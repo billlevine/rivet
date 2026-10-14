@@ -1,0 +1,249 @@
+{
+  "edges": [
+    {
+      "from": "r-5e4f40dee5a0a942",
+      "note": "Sustained memory pressure would reverse the choice.",
+      "relation": "would_overturn",
+      "sources": [
+        {
+          "end_line": 4,
+          "path": "notes.md",
+          "start_line": 4
+        }
+      ],
+      "to": "r-f6340b0aad386e37"
+    },
+    {
+      "from": "r-ad9b1390f4ee5b4d",
+      "note": "Revised policy clause.",
+      "order": "010",
+      "relation": "part_of",
+      "sources": [
+        {
+          "end_line": 8,
+          "path": "notes.md",
+          "start_line": 8
+        }
+      ],
+      "to": "r-139d544b821b13eb"
+    },
+    {
+      "from": "r-ad9b1390f4ee5b4d",
+      "note": "The revised policy clause replaces the initial clause.",
+      "relation": "supersedes",
+      "sources": [
+        {
+          "end_line": 8,
+          "path": "notes.md",
+          "start_line": 8
+        }
+      ],
+      "to": "r-c7066a3f8cdcff44"
+    },
+    {
+      "from": "r-c7066a3f8cdcff44",
+      "note": "Initial policy clause.",
+      "order": "010",
+      "relation": "part_of",
+      "sources": [
+        {
+          "end_line": 7,
+          "path": "notes.md",
+          "start_line": 7
+        }
+      ],
+      "to": "r-139d544b821b13eb"
+    },
+    {
+      "from": "r-f6340b0aad386e37",
+      "note": "Revisit the choice if previews exceed the memory budget.",
+      "relation": "depends_on_premise",
+      "sources": [
+        {
+          "end_line": 2,
+          "path": "notes.md",
+          "start_line": 2
+        }
+      ],
+      "to": "r-3bda82488daab42c"
+    },
+    {
+      "from": "r-f6340b0aad386e37",
+      "note": "The bounded memory rule replaces the disk rule.",
+      "relation": "supersedes",
+      "sources": [
+        {
+          "end_line": 2,
+          "path": "notes.md",
+          "start_line": 2
+        }
+      ],
+      "to": "r-d2d2f8eb63651058"
+    }
+  ],
+  "records": [
+    {
+      "actor": "example-author",
+      "authority": "unspecified",
+      "claim": "Preview Cache Policy lists the current thumbnail cache rule.",
+      "id": "r-139d544b821b13eb",
+      "kind": "document",
+      "recorded_at": "2025-01-01",
+      "sources": [
+        {
+          "end_line": 6,
+          "path": "notes.md",
+          "start_line": 6
+        }
+      ],
+      "state": "observed",
+      "title": "Preview Cache Policy",
+      "topic": "cache"
+    },
+    {
+      "actor": "example-author",
+      "authority": "unspecified",
+      "claim": "Thumbnail previews fit within the memory budget under normal load.",
+      "id": "r-3bda82488daab42c",
+      "kind": "judgment",
+      "recorded_at": "2025-02-01",
+      "sources": [
+        {
+          "end_line": 3,
+          "path": "notes.md",
+          "start_line": 3
+        }
+      ],
+      "state": "observed",
+      "title": "Preview memory assumption",
+      "topic": "cache"
+    },
+    {
+      "actor": "example-author",
+      "authority": "unspecified",
+      "claim": "Sustained preview traffic can raise memory pressure above the budget.",
+      "id": "r-5e4f40dee5a0a942",
+      "kind": "evidence",
+      "recorded_at": "2025-03-01",
+      "sources": [
+        {
+          "end_line": 4,
+          "path": "notes.md",
+          "start_line": 4
+        }
+      ],
+      "state": "observed",
+      "title": "Preview memory pressure",
+      "topic": "cache"
+    },
+    {
+      "actor": "example-author",
+      "authority": "unspecified",
+      "claim": "Consider a bounded memory buffer for debug logs.",
+      "id": "r-77ea7a70de791796",
+      "kind": "proposal",
+      "recorded_at": "2025-02-02",
+      "sources": [
+        {
+          "end_line": 9,
+          "path": "notes.md",
+          "start_line": 9
+        }
+      ],
+      "state": "observed",
+      "title": "Bounded log memory",
+      "topic": "logging"
+    },
+    {
+      "actor": "example-author",
+      "authority": "unspecified",
+      "claim": "Thumbnail previews must use a bounded memory cache.",
+      "id": "r-ad9b1390f4ee5b4d",
+      "kind": "requirement",
+      "recorded_at": "2025-02-01",
+      "sources": [
+        {
+          "end_line": 8,
+          "path": "notes.md",
+          "start_line": 8
+        }
+      ],
+      "state": "accepted",
+      "title": "Revised cache clause",
+      "topic": "cache"
+    },
+    {
+      "actor": "example-author",
+      "authority": "unspecified",
+      "claim": "Thumbnail previews must use a local disk cache.",
+      "id": "r-c7066a3f8cdcff44",
+      "kind": "requirement",
+      "recorded_at": "2025-01-01",
+      "sources": [
+        {
+          "end_line": 7,
+          "path": "notes.md",
+          "start_line": 7
+        }
+      ],
+      "state": "accepted",
+      "title": "Initial cache clause",
+      "topic": "cache"
+    },
+    {
+      "actor": "example-author",
+      "authority": "unspecified",
+      "claim": "Use a local disk cache for thumbnail previews.",
+      "id": "r-d2d2f8eb63651058",
+      "kind": "decision",
+      "recorded_at": "2025-01-01",
+      "sources": [
+        {
+          "end_line": 1,
+          "path": "notes.md",
+          "start_line": 1
+        }
+      ],
+      "state": "accepted",
+      "title": "Disk cache for previews",
+      "topic": "cache"
+    },
+    {
+      "actor": "example-author",
+      "authority": "unspecified",
+      "claim": "Use a memory cache for audit log previews in the test dashboard.",
+      "id": "r-f1b28aee9b223480",
+      "kind": "decision",
+      "recorded_at": "2025-02-05",
+      "sources": [
+        {
+          "end_line": 5,
+          "path": "notes.md",
+          "start_line": 5
+        }
+      ],
+      "state": "accepted",
+      "title": "Memory cache for audit log previews",
+      "topic": "audit"
+    },
+    {
+      "actor": "example-author",
+      "authority": "unspecified",
+      "claim": "Use a bounded memory cache for thumbnail previews.",
+      "id": "r-f6340b0aad386e37",
+      "kind": "decision",
+      "recorded_at": "2025-02-01",
+      "sources": [
+        {
+          "end_line": 2,
+          "path": "notes.md",
+          "start_line": 2
+        }
+      ],
+      "state": "accepted",
+      "title": "Bounded memory cache for previews",
+      "topic": "cache"
+    }
+  ],
+  "schema": "decision-records.v1"
+}

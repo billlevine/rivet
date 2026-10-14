@@ -1,0 +1,90 @@
+{
+  "status": "candidate evals, not executable benchmark passes",
+  "scope": "synthetic only",
+  "cases": [
+    {
+      "id": "amendment-authority",
+      "question": "A reviewer says a stale design note was corrected. Does that establish human approval of the replacement or production release?",
+      "fixture_recipe": "Old trial has a human affirmation. A later replacement has an agent-reported document amendment with an affirms edge explicitly scoped to document contents.",
+      "expected": "Distinguish reported document correction from human approval and production release; keep the original affirmation on its original target.",
+      "where": "Final answer after authority context is retrieved.",
+      "observed": "Four caveat omissions/partial omissions in the guidance comparison; original question did not explicitly ask this authority question. Future eval should ask it explicitly. A later three-policy comparison produced four more partial caveat scores; all required facts were recovered, and similar caveat wording received inconsistent grader credit. Retain the raw scores without interpreting the difference as a quality ranking.",
+      "grading_requirement": "Ask the authority question explicitly. Score human approval and production evidence separately with anchored examples so deployment-state and production-behavior wording receive consistent credit."
+    },
+    {
+      "id": "source-root-resolution",
+      "question": "Verify a record whose source path is notes.md when the configured source root is sources/.",
+      "fixture_recipe": "Place cited lines only in sources/notes.md; the stored reference is notes.md relative to source root.",
+      "expected": "Fetch the cited excerpt through the tool or resolve against sources/. A missing workspace-root notes.md is a failed lookup, not absence.",
+      "where": "Recall source-location receipt and lookup guidance.",
+      "observed": "One failed source lookup, with final answer recovered from already-read records.",
+      "implemented_regression": "tests/test_rivet.py::test_evidence_uses_capture_without_live_path; bench captured_source_lookup"
+    },
+    {
+      "id": "citation-root-alias",
+      "question": "Grade a citation to sources/notes.md when its record stores notes.md relative to the source root.",
+      "fixture_recipe": "Provide an explicit source-root mapping and identical evidence bytes at the workspace path.",
+      "expected": "Accept the verified workspace-relative citation; do not reject it solely for differing from the stored relative path.",
+      "where": "Evaluation grader source map.",
+      "observed": "Two false citation alerts were adjudicated by exact source-span comparisons; coverage scores unchanged."
+    },
+    {
+      "id": "proof-pagination-cost",
+      "question": "Recover a decision and its proof from code anchors without re-reading the same context across unnecessary turns.",
+      "fixture_recipe": "Whole claims and linked context fit a page, but adding all captured excerpts slightly exceeds the same byte budget.",
+      "expected": "Honor explicit budgets and follow omission notices. Measure total tokens and turns, not only bytes. Compare targeted evidence, a larger explicit proof budget and full-source pagination without assuming any one is best.",
+      "where": "Recall presentation and proof-fetch guidance.",
+      "observed": "Four default readers paginated at 6000 bytes; four readers using an explicit 12000-byte proof cap finished in three turns rather than four. All recovered explicitly requested facts. Four targeted readers returned slightly fewer bytes than the larger proof view but still needed four turns. Known small synthetic cases: full proof views were 6304/6345 bytes, not evidence of generalization.",
+      "next_eval": "Freeze previously unseen cases with full proof views below, near and far above both caps, including a single-span verification task. Compare conditional guidance and fixed policies; report returned bytes, total tokens, turns and explicit authority questions."
+    },
+    {
+      "id": "partial-search-file-error",
+      "question": "A search over sources, code and an assumed README reports a missing README but returns matches from the other files. What was established?",
+      "fixture_recipe": "Do not create README.md; provide relevant evidence and code in the other searched paths.",
+      "expected": "Retain the available matches, disclose failed file reading when relevant, and do not equate a partial search failure with no evidence.",
+      "where": "Reader tool-result handling.",
+      "observed": "One baseline shell request returned useful matches with exit 2 because README.md was absent; final answer recovered."
+    },
+    {
+      "id": "pagination-count-preservation",
+      "question": "After a large record forces a small first page, can later pages use the originally requested count while respecting the byte cap?",
+      "fixture_recipe": "A long current claim followed by several short linked records. Request count 20, with a byte budget that fits only the first claim on page one. Repeat with an explicit count 2.",
+      "expected": "NEXT preserves the original count. Later pages may expand; each page remains within budget and all records and edges appear exactly once. A single oversized record still returns an explicit error.",
+      "where": "rivet.py bounded follow-up generation.",
+      "observed": "Literal NEXT traversal took six pages for a medium proof view and nine for a larger one. Preserving the requested count reduced both to three pages without losing records or edges.",
+      "implemented_regression": "tests/test_rivet.py::test_next_page_can_expand_after_a_large_first_record"
+    },
+    {
+      "id": "historical-approval-inventory",
+      "question": "List each recorded human approval separately: what did the old local demonstration approval permit, what exact tuple did the later approval bind, and does either authorize the moved base?",
+      "fixture_recipe": "A local-demo approval targets an obsolete choice. A later candidate approval binds candidate, policy, scope and base; a subsequent observation moves only the base.",
+      "expected": "Enumerate both approvals with their distinct targets. Neither authorizes publication at the moved base; a document correction is not a new approval.",
+      "where": "Answer construction after complete approval context is retrieved.",
+      "observed": "Two revised-guide answers recovered the current tuple and correctly refused publication, but omitted the old demonstration approval despite receiving it. The original broad question was less explicit about listing every historical approval; this candidate makes that requirement explicit."
+    },
+    {
+      "id": "grader-source-id-registry",
+      "question": "Is a source-ID citation valid when the raw capture has only path, line span and hash fields?",
+      "fixture_recipe": "Derive a source ID through the CLI, deliver it with a captured excerpt, then grade an answer citing that ID. Provide the derived registry alongside raw records.",
+      "expected": "Resolve the ID to the exact captured path, span and hash. An ID missing from the grader packet is insufficient to call the citation invalid.",
+      "where": "Grading packet construction and deterministic citation audit.",
+      "observed": "Eight citation alerts were false positives. Every flagged ID was delivered to its reader and matched the captured source hash and exact bytes."
+    },
+    {
+      "id": "historical-scope-specificity",
+      "question": "Did the intermediate approval policy name a particular scope, or merely require a scope field?",
+      "fixture_recipe": "An intermediate policy binds a generic target scope; a later candidate-specific approval names scope canary.",
+      "expected": "Do not attach the later candidate-specific scope to the earlier policy as an observed historical fact.",
+      "where": "Final answer wording and provenance of details.",
+      "observed": "One baseline answer described the earlier correction as binding canary scope, although that specific value appears only in the later approval."
+    },
+    {
+      "id": "named-receipt-retrieval",
+      "question": "Verify the counts and observation limits of one explicitly named receipt without retrieving unrelated proof.",
+      "fixture_recipe": "A large linked policy history with a short receipt whose name appears only in captured source text. Include a multi-claim policy question separately.",
+      "expected": "Measure whether the reader selects direct captured-source search or a focused evidence lookup for the narrow question. Do not assume a broad proof response is cheaper, or force graph use when a named-source lookup answers it.",
+      "where": "Guidance selection and recall tool ergonomics.",
+      "observed": "The new-history comparison included fast direct-source reads in both arms and broader graph reads for the same narrow questions. Larger responses sometimes fetched more bytes without saving a turn."
+    }
+  ]
+}
